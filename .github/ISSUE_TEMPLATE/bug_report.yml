@@ -28,7 +28,7 @@ body:
     id: version
     attributes:
       label: AgentDoctor version
-      placeholder: agentdoctor 0.1.1
+      placeholder: agentdoctor 0.1.2
     validations:
       required: true
   - type: dropdown
