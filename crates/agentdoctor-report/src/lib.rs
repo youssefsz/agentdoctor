@@ -15,7 +15,9 @@ pub fn render_json(report: &AuditReport) -> Result<String, ReportError> {
 
 pub fn render_pretty(report: &AuditReport) -> String {
     let mut output = String::new();
-    output.push_str("AgentDoctor 0.1.0\n\n");
+    output.push_str("AgentDoctor ");
+    output.push_str(env!("CARGO_PKG_VERSION"));
+    output.push_str("\n\n");
     output.push_str("Detected: ");
     let stack = report.facts.detected_stack_labels();
     if stack.is_empty() {

@@ -67,7 +67,7 @@ runtime.
 Run from PowerShell:
 
 ```powershell
-iwr https://raw.githubusercontent.com/youssefsz/agentdoctor/main/install.ps1 -UseB | iex
+irm https://raw.githubusercontent.com/youssefsz/agentdoctor/main/install.ps1 | iex
 ```
 
 Or from a local checkout:
@@ -138,7 +138,7 @@ agentdoctor config show
 ## Example Output
 
 ```text
-AgentDoctor 0.1.0
+AgentDoctor 0.1.1
 
 Detected: Cargo
 
@@ -257,8 +257,8 @@ Tagged releases build archives for:
 Create a release by pushing a tag:
 
 ```bash
-git tag v0.1.0
-git push origin v0.1.0
+git tag vX.Y.Z
+git push origin vX.Y.Z
 ```
 
 The release workflow uploads platform archives and checksums to GitHub Releases.

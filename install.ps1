@@ -44,9 +44,13 @@ function Add-UserPath {
 }
 
 function Get-Target {
-    $arch = [System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture
+    $arch = $env:PROCESSOR_ARCHITEW6432
+    if ([string]::IsNullOrWhiteSpace($arch)) {
+        $arch = $env:PROCESSOR_ARCHITECTURE
+    }
+
     switch ($arch) {
-        "X64" { return "x86_64-pc-windows-gnu" }
+        "AMD64" { return "x86_64-pc-windows-gnu" }
         default {
             throw "Unsupported Windows architecture: $arch"
         }
