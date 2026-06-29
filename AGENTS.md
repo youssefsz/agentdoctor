@@ -97,6 +97,10 @@ tooling, not a prototype.
   practical.
 - Do not break `install.ps1`, `install.sh`, or `scripts/install-local.ps1`
   behavior when changing release artifacts.
+- Keep upgrade network access isolated to lifecycle commands. Scans must remain
+  offline and deterministic.
+- Keep uninstall confirmation-gated; non-interactive uninstall must require an
+  explicit `--yes`.
 - Release archives must include the binary, README, and LICENSE.
 - CI must stay strict: fmt, clippy with `-D warnings`, tests, and release build.
 

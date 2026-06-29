@@ -1,5 +1,7 @@
 #![forbid(unsafe_code)]
 
+mod lifecycle;
+
 use std::{error::Error, fmt, io::IsTerminal, path::PathBuf, process::ExitCode, str::FromStr};
 
 use agentdoctor_config::{
@@ -40,6 +42,10 @@ fn run() -> anyhow::Result<ExitCode> {
             dry_run,
         } => run_init(path, agents, dry_run, cli.no_interactive),
         Commands::Config { command } => run_config(command),
+        Commands::Upgrade { repo, force } => lifecycle::run_upgrade(repo, force),
+        Commands::Uninstall { yes, remove_config } => {
+            lifecycle::run_uninstall(yes, remove_config, cli.no_interactive)
+        }
     }
 }
 
@@ -55,35 +61,67 @@ struct Cli {
 
 #[derive(Debug, Subcommand)]
 enum Commands {
+    #[command(about = "Scan a repository for AI coding agent readiness.")]
     Scan {
+        /// Repository path to scan. Defaults to the current directory.
         path: Option<PathBuf>,
+        /// Output format.
         #[arg(long, value_enum, default_value_t = OutputFormat::Pretty)]
         format: OutputFormat,
+        /// Comma-separated selected agents: codex, claude, cursor, copilot, gemini, generic.
         #[arg(long)]
         agents: Option<String>,
+        /// Disable progress output.
         #[arg(long)]
         no_progress: bool,
     },
+    #[command(about = "Preview generated setup files without writing them.")]
     Init {
+        /// Repository path. Defaults to the current directory.
         path: Option<PathBuf>,
+        /// Comma-separated selected agents: codex, claude, cursor, copilot, gemini, generic.
         #[arg(long)]
         agents: Option<String>,
+        /// Print the init plan without writing files. Required in v0.1.
         #[arg(long)]
         dry_run: bool,
     },
+    #[command(about = "Manage AgentDoctor global configuration.")]
     Config {
         #[command(subcommand)]
         command: ConfigCommand,
+    },
+    #[command(about = "Upgrade AgentDoctor from the latest GitHub Release.")]
+    Upgrade {
+        /// Release repository in owner/name form.
+        #[arg(long)]
+        repo: Option<String>,
+        /// Reinstall even when the current version is already latest.
+        #[arg(long)]
+        force: bool,
+    },
+    #[command(about = "Uninstall the current AgentDoctor executable.")]
+    Uninstall {
+        /// Skip the confirmation prompt. Required with --no-interactive.
+        #[arg(long)]
+        yes: bool,
+        /// Also remove global AgentDoctor config.
+        #[arg(long)]
+        remove_config: bool,
     },
 }
 
 #[derive(Debug, Subcommand)]
 enum ConfigCommand {
+    #[command(about = "Show global config as TOML.")]
     Show,
+    #[command(about = "Show or set selected global agents.")]
     Agents {
+        /// Comma-separated selected agents to save globally.
         #[arg(long)]
         set: Option<String>,
     },
+    #[command(about = "Remove global config.")]
     Reset,
 }
 

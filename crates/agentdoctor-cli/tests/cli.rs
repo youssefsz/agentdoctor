@@ -198,3 +198,40 @@ fn init_without_dry_run_is_rejected_and_does_not_write_files() {
     assert!(!repo.path().join("AGENTS.md").exists());
     assert!(!repo.path().join(".agentdoctor.toml").exists());
 }
+
+#[test]
+fn help_lists_lifecycle_commands() {
+    let config_home = tempdir().expect("config");
+
+    command(config_home.path())
+        .arg("--help")
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("upgrade"))
+        .stdout(predicate::str::contains("uninstall"));
+}
+
+#[test]
+fn uninstall_requires_confirmation_in_non_interactive_mode() {
+    let config_home = tempdir().expect("config");
+
+    command(config_home.path())
+        .args(["--no-interactive", "uninstall"])
+        .assert()
+        .code(2)
+        .stderr(predicate::str::contains(
+            "uninstall requires --yes when --no-interactive is set",
+        ));
+}
+
+#[test]
+fn upgrade_help_documents_force_and_repo_options() {
+    let config_home = tempdir().expect("config");
+
+    command(config_home.path())
+        .args(["upgrade", "--help"])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("--force"))
+        .stdout(predicate::str::contains("--repo"));
+}

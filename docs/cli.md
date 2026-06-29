@@ -62,6 +62,68 @@ agentdoctor init --dry-run
 agentdoctor init . --dry-run --agents codex,claude,cursor
 ```
 
+## upgrade
+
+```bash
+agentdoctor upgrade [--repo <owner/name>] [--force]
+```
+
+Checks the latest GitHub Release, compares it with the current binary version,
+downloads the matching platform archive, and replaces the current executable.
+Upgrade uses PowerShell for downloads on Windows and `curl` on macOS/Linux.
+
+Options:
+
+- `--repo <owner/name>`: release repository. Defaults to
+  `youssefsz/agentdoctor`. The `AGENTDOCTOR_REPO` environment variable can also
+  override this.
+- `--force`: reinstall from the latest release even when the current version is
+  already up to date.
+
+Supported release targets:
+
+- Windows x86_64: `x86_64-pc-windows-gnu.zip`
+- Linux x86_64: `x86_64-unknown-linux-gnu.tar.gz`
+- Linux ARM64: `aarch64-unknown-linux-gnu.tar.gz`
+- macOS x86_64: `x86_64-apple-darwin.tar.gz`
+- macOS ARM64: `aarch64-apple-darwin.tar.gz`
+
+Examples:
+
+```bash
+agentdoctor upgrade
+agentdoctor upgrade --force
+agentdoctor upgrade --repo youssefsz/agentdoctor
+```
+
+If the current version is already the latest release, AgentDoctor prints that it
+is already up to date and does not download or reinstall the binary.
+
+## uninstall
+
+```bash
+agentdoctor uninstall [--yes] [--remove-config]
+```
+
+Removes the currently running AgentDoctor executable.
+
+Options:
+
+- `--yes`: skip the confirmation prompt. Required with `--no-interactive`.
+- `--remove-config`: also remove global AgentDoctor config when it exists.
+
+Examples:
+
+```bash
+agentdoctor uninstall
+agentdoctor --no-interactive uninstall --yes
+agentdoctor uninstall --yes --remove-config
+```
+
+Uninstall does not remove PATH entries because install directories such as
+`~/.local/bin` and `%USERPROFILE%\.local\bin` may be shared with other tools. On
+Windows, executable deletion is completed after the process exits.
+
 ## config
 
 ```bash

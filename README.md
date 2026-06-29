@@ -166,6 +166,8 @@ agentdoctor --version
 
 agentdoctor scan [path] [--format pretty|json] [--agents codex,claude,cursor] [--no-progress] [--no-interactive]
 agentdoctor init [path] --dry-run [--agents codex,claude,cursor] [--no-interactive]
+agentdoctor upgrade [--repo owner/name] [--force]
+agentdoctor uninstall [--yes] [--remove-config]
 agentdoctor config show [--no-interactive]
 agentdoctor config agents [--no-interactive]
 agentdoctor config agents --set codex,claude [--no-interactive]
