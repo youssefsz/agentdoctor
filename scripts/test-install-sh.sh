@@ -68,7 +68,7 @@ test_linux_bash_profiles() (
   assert_file_contains "$HOME/.bashrc" "# Added by AgentDoctor installer"
 )
 
-test_macos_default_install_dir_prefers_path_directory() (
+test_macos_default_install_dir_prefers_user_directory() (
   tmp="${TMPDIR:-/tmp}/agentdoctor-install-test-default-dir-$$"
   rm -rf "$tmp"
   mkdir -p "$tmp/home"
@@ -85,7 +85,28 @@ test_macos_default_install_dir_prefers_path_directory() (
   . "$repo_root/install.sh"
   resolve_install_dir
 
-  [ "$install_dir" = "/usr/local/bin" ] || fail "macOS default install dir should prefer /usr/local/bin on PATH"
+  [ "$install_dir" = "$HOME/.local/bin" ] || fail "macOS default install dir should avoid sudo-only system directories"
+)
+
+test_system_install_mode_prefers_path_system_directory() (
+  tmp="${TMPDIR:-/tmp}/agentdoctor-install-test-system-dir-$$"
+  rm -rf "$tmp"
+  mkdir -p "$tmp/home"
+  trap 'rm -rf "$tmp"' EXIT INT TERM
+
+  HOME="$tmp/home"
+  SHELL="/bin/zsh"
+  PATH="/usr/local/bin:/usr/bin:/bin"
+  AGENTDOCTOR_TEST_UNAME_S="Darwin"
+  AGENTDOCTOR_TEST_UNAME_M="arm64"
+  AGENTDOCTOR_INSTALL_MODE="system"
+  AGENTDOCTOR_INSTALLER_SOURCE_ONLY=1
+  export HOME SHELL PATH AGENTDOCTOR_TEST_UNAME_S AGENTDOCTOR_TEST_UNAME_M AGENTDOCTOR_INSTALL_MODE AGENTDOCTOR_INSTALLER_SOURCE_ONLY
+
+  . "$repo_root/install.sh"
+  resolve_install_dir
+
+  [ "$install_dir" = "/usr/local/bin" ] || fail "system install mode should prefer /usr/local/bin on macOS"
 )
 
 test_run_step_executes_command_without_tty() (
@@ -107,7 +128,8 @@ test_run_step_executes_command_without_tty() (
 
 test_macos_zsh_profiles
 test_linux_bash_profiles
-test_macos_default_install_dir_prefers_path_directory
+test_macos_default_install_dir_prefers_user_directory
+test_system_install_mode_prefers_path_system_directory
 test_run_step_executes_command_without_tty
 
 echo "install.sh profile tests passed"

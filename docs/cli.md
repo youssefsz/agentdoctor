@@ -99,6 +99,12 @@ agentdoctor upgrade --repo youssefsz/agentdoctor
 If the current version is already the latest release, AgentDoctor prints that it
 is already up to date and does not download or reinstall the binary.
 
+`upgrade` replaces the currently running executable. If AgentDoctor was
+previously installed into a root-owned system directory such as `/usr/local/bin`,
+the operating system may require administrator permission to replace that file.
+The Unix installer defaults to a user-local install to avoid creating that
+problem for new installs.
+
 ## uninstall
 
 ```bash
@@ -123,6 +129,10 @@ agentdoctor uninstall --yes --remove-config
 Uninstall does not remove PATH entries because install directories such as
 `~/.local/bin` and `%USERPROFILE%\.local\bin` may be shared with other tools. On
 Windows, executable deletion is completed after the process exits.
+
+If AgentDoctor was previously installed into a root-owned system directory,
+macOS/Linux may require administrator permission to remove that exact binary.
+New Unix installs are user-local by default; system-wide installs are explicit.
 
 ## config
 

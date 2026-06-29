@@ -3,6 +3,7 @@ set -eu
 
 repo="${AGENTDOCTOR_REPO:-youssefsz/agentdoctor}"
 install_dir="${AGENTDOCTOR_INSTALL_DIR:-}"
+install_mode="${AGENTDOCTOR_INSTALL_MODE:-user}"
 tmp_dir="${TMPDIR:-/tmp}/agentdoctor-install-$$"
 no_path_update="${AGENTDOCTOR_NO_PATH_UPDATE:-}"
 source_only="${AGENTDOCTOR_INSTALLER_SOURCE_ONLY:-}"
@@ -76,17 +77,38 @@ path_contains_dir() {
 }
 
 default_install_dir() {
-  os="$(uname_s)"
+  case "$install_mode" in
+    user) user_install_dir ;;
+    system) system_install_dir ;;
+    *)
+      echo "error: AGENTDOCTOR_INSTALL_MODE must be 'user' or 'system'" >&2
+      exit 1
+      ;;
+  esac
+}
 
+user_install_dir() {
+  for candidate in "$HOME/.local/bin" "$HOME/bin" "$HOME/.cargo/bin"; do
+    if path_contains_dir "$candidate"; then
+      printf "%s" "$candidate"
+      return 0
+    fi
+  done
+
+  printf "%s/.local/bin" "$HOME"
+}
+
+system_install_dir() {
+  os="$(uname_s)"
   if [ "$os" = "Darwin" ]; then
-    for candidate in /usr/local/bin /opt/homebrew/bin "$HOME/.local/bin"; do
+    for candidate in /usr/local/bin /opt/homebrew/bin; do
       if path_contains_dir "$candidate"; then
         printf "%s" "$candidate"
         return 0
       fi
     done
   else
-    for candidate in "$HOME/.local/bin" "$HOME/bin" /usr/local/bin; do
+    for candidate in /usr/local/bin; do
       if path_contains_dir "$candidate"; then
         printf "%s" "$candidate"
         return 0
@@ -94,7 +116,7 @@ default_install_dir() {
     done
   fi
 
-  printf "%s/.local/bin" "$HOME"
+  printf "/usr/local/bin"
 }
 
 resolve_install_dir() {
@@ -185,6 +207,21 @@ can_animate() {
   [ -t 2 ] && [ "${TERM:-}" != "dumb" ]
 }
 
+use_color() {
+  can_animate && [ -z "${NO_COLOR:-}" ]
+}
+
+color_text() {
+  code="$1"
+  text="$2"
+
+  if use_color; then
+    printf "\033[%sm%s\033[0m" "$code" "$text"
+  else
+    printf "%s" "$text"
+  fi
+}
+
 spinner_frame() {
   case "$1" in
     0) printf "-" ;;
@@ -205,16 +242,16 @@ run_step() {
 
     while kill -0 "$pid" 2>/dev/null; do
       frame="$(spinner_frame "$frame_index")"
-      printf "\r%s %s" "$frame" "$message" >&2
+      printf "\r%s %s" "$(color_text "36" "$frame")" "$(color_text "1" "$message")" >&2
       frame_index=$(((frame_index + 1) % 4))
       sleep 0.1
     done
 
     if wait "$pid"; then
-      printf "\r[ok] %s\n" "$message" >&2
+      printf "\r%s %s\n" "$(color_text "32" "[ok]")" "$message" >&2
     else
       status="$?"
-      printf "\r[failed] %s\n" "$message" >&2
+      printf "\r%s %s\n" "$(color_text "31" "[failed]")" "$message" >&2
       return "$status"
     fi
   else
@@ -261,6 +298,10 @@ extract_archive() {
   tar -xzf "$archive" -C "$tmp_dir"
 }
 
+allow_sudo() {
+  [ "$install_mode" = "system" ] || [ "${AGENTDOCTOR_ALLOW_SUDO:-}" = "1" ]
+}
+
 install_binary() {
   resolve_install_dir
 
@@ -269,6 +310,12 @@ install_binary() {
     cp "$binary" "$install_dir/agentdoctor"
     chmod 755 "$install_dir/agentdoctor"
     return 0
+  fi
+
+  if ! allow_sudo; then
+    echo "error: $install_dir is not writable." >&2
+    echo "Choose a user-writable install dir with AGENTDOCTOR_INSTALL_DIR, or set AGENTDOCTOR_INSTALL_MODE=system to allow sudo." >&2
+    exit 1
   fi
 
   if ! has_command sudo; then
@@ -314,7 +361,8 @@ main() {
 
   mkdir -p "$tmp_dir"
 
-  echo "AgentDoctor installer"
+  color_text "1;36" "AgentDoctor installer"
+  echo
   run_step "Checking latest release for $target" download_release_metadata
   download_url="$(
     sed -n 's/.*"browser_download_url": "\(.*agentdoctor-.*-'"$target"'\.tar\.gz\)".*/\1/p' "$release_json" \

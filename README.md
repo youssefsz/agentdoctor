@@ -84,9 +84,20 @@ Run:
 curl -fsSL https://raw.githubusercontent.com/youssefsz/agentdoctor/main/install.sh | sh
 ```
 
-The Unix installer shows step progress, prefers an install directory that is
-already on `PATH` such as `/usr/local/bin` on macOS, updates shell profiles only
-when needed, and verifies the installed binary.
+The Unix installer shows colored step progress in interactive terminals,
+installs to a user-writable directory by default, updates shell profiles when
+needed, and verifies the installed binary. It does not use `sudo` unless you
+explicitly request a system install:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/youssefsz/agentdoctor/main/install.sh | AGENTDOCTOR_INSTALL_MODE=system sh
+```
+
+You can also choose a custom user-writable directory:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/youssefsz/agentdoctor/main/install.sh | AGENTDOCTOR_INSTALL_DIR="$HOME/.local/bin" sh
+```
 
 ### From Source
 
@@ -139,7 +150,7 @@ agentdoctor config show
 ## Example Output
 
 ```text
-AgentDoctor 0.1.3
+AgentDoctor 0.1.4
 
 Detected: Cargo
 

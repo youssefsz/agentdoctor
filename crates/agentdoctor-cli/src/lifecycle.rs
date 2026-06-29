@@ -53,7 +53,7 @@ pub fn run_upgrade(repo: Option<String>, force: bool) -> anyhow::Result<ExitCode
     let new_binary = extract_binary(&archive_path, &target, &work_dir)?;
 
     let spinner = spinner("Installing update...");
-    self_replace::self_replace(&new_binary).context("failed to replace current executable")?;
+    replace_current_executable(&new_binary)?;
     let _ = fs::remove_file(&new_binary);
     spinner.finish_with_message("Installed update.");
     let _ = fs::remove_dir_all(&work_dir);
@@ -96,7 +96,7 @@ pub fn run_uninstall(
     if remove_config {
         let _ = reset_global_config()?;
     }
-    self_replace::self_delete().context("failed to remove current executable")?;
+    delete_current_executable()?;
     spinner.finish_with_message("AgentDoctor uninstalled.");
 
     println!("Removed {}", exe.display());
@@ -378,6 +378,38 @@ fn command_exists(command: &str) -> bool {
         .is_ok()
 }
 
+fn replace_current_executable(new_binary: &Path) -> anyhow::Result<()> {
+    if let Err(error) = self_replace::self_replace(new_binary) {
+        if error.kind() == io::ErrorKind::PermissionDenied && !cfg!(windows) {
+            bail!(
+                "failed to replace the current executable because the install path is not writable. \
+This usually means AgentDoctor was installed into a root-owned system directory. \
+Reinstall with the default user-local installer, or run the upgrade with administrator permission for this system install."
+            );
+        }
+
+        return Err(error).context("failed to replace current executable");
+    }
+
+    Ok(())
+}
+
+fn delete_current_executable() -> anyhow::Result<()> {
+    if let Err(error) = self_replace::self_delete() {
+        if error.kind() == io::ErrorKind::PermissionDenied && !cfg!(windows) {
+            bail!(
+                "failed to remove the current executable because the install path is not writable. \
+This usually means AgentDoctor was installed into a root-owned system directory. \
+Remove that system install with administrator permission, then reinstall with the default user-local installer."
+            );
+        }
+
+        return Err(error).context("failed to remove current executable");
+    }
+
+    Ok(())
+}
+
 #[cfg(windows)]
 fn escape_powershell_single_quoted(value: &str) -> String {
     value.replace('\'', "''")
@@ -402,8 +434,13 @@ fn spinner(message: impl Into<String>) -> ProgressBar {
     }
 
     let progress = ProgressBar::with_draw_target(None, ProgressDrawTarget::stderr_with_hz(12));
+    let template = if env::var_os("NO_COLOR").is_some() {
+        "{spinner} {wide_msg}"
+    } else {
+        "{spinner:.green} {wide_msg}"
+    };
     progress.set_style(
-        ProgressStyle::with_template("{spinner} {wide_msg}")
+        ProgressStyle::with_template(template)
             .expect("spinner template should be valid")
             .tick_strings(&["-", "\\", "|", "/"]),
     );
