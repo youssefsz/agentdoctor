@@ -84,8 +84,9 @@ Run:
 curl -fsSL https://raw.githubusercontent.com/youssefsz/agentdoctor/main/install.sh | sh
 ```
 
-The Unix installer places `agentdoctor` in `~/.local/bin` by default and updates
-your shell profile when that directory is not already on `PATH`.
+The Unix installer places `agentdoctor` in `~/.local/bin` by default, updates
+the relevant login and interactive shell profiles, and verifies the installed
+binary.
 
 ### From Source
 
