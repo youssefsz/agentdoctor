@@ -1,0 +1,10 @@
+{
+  "name": "@fixture/web",
+  "scripts": {
+    "build": "vite build",
+    "test": "vitest"
+  },
+  "dependencies": {
+    "vite": "latest"
+  }
+}

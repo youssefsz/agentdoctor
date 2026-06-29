@@ -1,0 +1,30 @@
+[package]
+name = "agentdoctor-cli"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+description = "Command-line interface for AgentDoctor."
+
+[[bin]]
+name = "agentdoctor"
+path = "src/main.rs"
+
+[dependencies]
+agentdoctor-config.workspace = true
+agentdoctor-engine.workspace = true
+agentdoctor-report.workspace = true
+anyhow.workspace = true
+anstream.workspace = true
+anstyle.workspace = true
+clap.workspace = true
+inquire.workspace = true
+toml.workspace = true
+
+[dev-dependencies]
+assert_cmd.workspace = true
+predicates.workspace = true
+serde_json.workspace = true
+tempfile.workspace = true

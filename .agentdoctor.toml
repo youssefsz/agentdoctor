@@ -1,0 +1,25 @@
+version = 1
+
+[agents]
+enabled = ["codex"]
+
+[score]
+minimum = 80
+
+[commands]
+format = "cargo fmt --all"
+lint = "cargo clippy --workspace --all-targets -- -D warnings"
+test = "cargo test --workspace"
+build = "cargo build --workspace --release"
+
+[paths]
+ignore = ["target", "dist", ".next", "coverage", "node_modules"]
+
+[rules]
+require_agents_md = true
+require_test_command = true
+require_build_command = true
+require_boundaries = true
+require_env_example = true
+detect_generic_instructions = true
+detect_dangerous_instructions = true

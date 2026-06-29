@@ -1,0 +1,7 @@
+{
+  "name": "@fixture/api",
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest"
+  }
+}
