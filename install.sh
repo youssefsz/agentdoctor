@@ -286,29 +286,15 @@ configure_path() {
   ensure_current_path
 }
 
-release_tag_from_url() {
-  url="$1"
-
-  case "$url" in
-    */releases/tag/*)
-      tag="${url##*/releases/tag/}"
-      tag="${tag%%\?*}"
-      tag="${tag%%#*}"
-      tag="${tag%/}"
-      printf "%s" "$tag"
-      ;;
-    *)
-      return 1
-      ;;
-  esac
-}
-
 resolve_latest_release() {
-  latest_url="$(curl -fsSLI -o /dev/null -w "%{url_effective}" "https://github.com/$repo/releases/latest")"
-  release_tag="$(release_tag_from_url "$latest_url" || true)"
+  release_tag="$(
+    curl -fsSL "https://api.github.com/repos/$repo/releases/latest" \
+      | sed -n 's/.*"tag_name":[[:space:]]*"\([^"]*\)".*/\1/p' \
+      | head -n 1
+  )"
 
   if [ -z "$release_tag" ]; then
-    echo "error: could not resolve the latest release tag from $latest_url" >&2
+    echo "error: could not resolve the latest release tag for $repo" >&2
     exit 1
   fi
 
