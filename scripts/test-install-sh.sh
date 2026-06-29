@@ -68,7 +68,46 @@ test_linux_bash_profiles() (
   assert_file_contains "$HOME/.bashrc" "# Added by AgentDoctor installer"
 )
 
+test_macos_default_install_dir_prefers_path_directory() (
+  tmp="${TMPDIR:-/tmp}/agentdoctor-install-test-default-dir-$$"
+  rm -rf "$tmp"
+  mkdir -p "$tmp/home"
+  trap 'rm -rf "$tmp"' EXIT INT TERM
+
+  HOME="$tmp/home"
+  SHELL="/bin/zsh"
+  PATH="/usr/local/bin:/usr/bin:/bin"
+  AGENTDOCTOR_TEST_UNAME_S="Darwin"
+  AGENTDOCTOR_TEST_UNAME_M="arm64"
+  AGENTDOCTOR_INSTALLER_SOURCE_ONLY=1
+  export HOME SHELL PATH AGENTDOCTOR_TEST_UNAME_S AGENTDOCTOR_TEST_UNAME_M AGENTDOCTOR_INSTALLER_SOURCE_ONLY
+
+  . "$repo_root/install.sh"
+  resolve_install_dir
+
+  [ "$install_dir" = "/usr/local/bin" ] || fail "macOS default install dir should prefer /usr/local/bin on PATH"
+)
+
+test_run_step_executes_command_without_tty() (
+  tmp="${TMPDIR:-/tmp}/agentdoctor-install-test-step-$$"
+  rm -rf "$tmp"
+  mkdir -p "$tmp"
+  trap 'rm -rf "$tmp"' EXIT INT TERM
+
+  HOME="$tmp/home"
+  SHELL="/bin/sh"
+  AGENTDOCTOR_INSTALLER_SOURCE_ONLY=1
+  export HOME SHELL AGENTDOCTOR_INSTALLER_SOURCE_ONLY
+
+  . "$repo_root/install.sh"
+
+  run_step "Creating marker" sh -c 'printf "ok" > "$1"' sh "$tmp/marker"
+  assert_file_contains "$tmp/marker" "ok"
+)
+
 test_macos_zsh_profiles
 test_linux_bash_profiles
+test_macos_default_install_dir_prefers_path_directory
+test_run_step_executes_command_without_tty
 
 echo "install.sh profile tests passed"

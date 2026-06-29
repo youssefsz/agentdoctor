@@ -1,7 +1,7 @@
 use std::{
     env,
     fs::{self, File},
-    io,
+    io::{self, IsTerminal},
     path::{Path, PathBuf},
     process::{Command, ExitCode, Stdio},
     time::{Duration, SystemTime, UNIX_EPOCH},
@@ -10,7 +10,7 @@ use std::{
 use agentdoctor_config::reset_global_config;
 use anyhow::{Context, anyhow, bail};
 use flate2::read::GzDecoder;
-use indicatif::{ProgressBar, ProgressStyle};
+use indicatif::{ProgressBar, ProgressDrawTarget, ProgressStyle};
 use inquire::Confirm;
 use semver::Version;
 use serde::Deserialize;
@@ -395,13 +395,21 @@ fn create_temp_dir(prefix: &str) -> anyhow::Result<PathBuf> {
 }
 
 fn spinner(message: impl Into<String>) -> ProgressBar {
-    let progress = ProgressBar::new_spinner();
+    let message = message.into();
+    if !io::stderr().is_terminal() || env::var("TERM").is_ok_and(|term| term == "dumb") {
+        eprintln!("{message}");
+        return ProgressBar::hidden();
+    }
+
+    let progress = ProgressBar::with_draw_target(None, ProgressDrawTarget::stderr_with_hz(12));
     progress.set_style(
-        ProgressStyle::with_template("{spinner:.green} {wide_msg}")
+        ProgressStyle::with_template("{spinner} {wide_msg}")
             .expect("spinner template should be valid")
             .tick_strings(&["-", "\\", "|", "/"]),
     );
-    progress.set_message(message.into());
+    progress.set_message(message);
+    progress.tick();
+    progress.force_draw();
     progress.enable_steady_tick(Duration::from_millis(80));
     progress
 }
