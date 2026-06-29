@@ -286,12 +286,42 @@ configure_path() {
   ensure_current_path
 }
 
-download_release_metadata() {
-  curl -fsSL "$api_url" -o "$release_json"
+release_tag_from_url() {
+  url="$1"
+
+  case "$url" in
+    */releases/tag/*)
+      tag="${url##*/releases/tag/}"
+      tag="${tag%%\?*}"
+      tag="${tag%%#*}"
+      tag="${tag%/}"
+      printf "%s" "$tag"
+      ;;
+    *)
+      return 1
+      ;;
+  esac
+}
+
+resolve_latest_release() {
+  latest_url="$(curl -fsSLI -o /dev/null -w "%{url_effective}" "https://github.com/$repo/releases/latest")"
+  release_tag="$(release_tag_from_url "$latest_url" || true)"
+
+  if [ -z "$release_tag" ]; then
+    echo "error: could not resolve the latest release tag from $latest_url" >&2
+    exit 1
+  fi
+
+  printf "%s" "$release_tag" > "$release_tag_file"
 }
 
 download_archive() {
-  curl -fsSL "$download_url" -o "$archive"
+  if ! curl -fsSL "$download_url" -o "$archive"; then
+    echo "error: failed to download expected release asset:" >&2
+    echo "  $download_url" >&2
+    echo "Check that release $release_tag contains $archive_name." >&2
+    exit 1
+  fi
 }
 
 extract_archive() {
@@ -352,8 +382,7 @@ main() {
   need uname
 
   target="$(detect_target)"
-  api_url="https://api.github.com/repos/$repo/releases/latest"
-  release_json="$tmp_dir/latest-release.json"
+  release_tag_file="$tmp_dir/latest-release-tag.txt"
   resolve_install_dir
   if path_contains_dir "$install_dir"; then
     install_dir_was_on_path=1
@@ -363,19 +392,13 @@ main() {
 
   color_text "1;36" "AgentDoctor installer"
   echo
-  run_step "Checking latest release for $target" download_release_metadata
-  download_url="$(
-    sed -n 's/.*"browser_download_url": "\(.*agentdoctor-.*-'"$target"'\.tar\.gz\)".*/\1/p' "$release_json" \
-      | head -n 1
-  )"
+  run_step "Resolving latest release for $target" resolve_latest_release
+  release_tag="$(cat "$release_tag_file")"
+  archive_name="agentdoctor-$release_tag-$target.tar.gz"
+  download_url="https://github.com/$repo/releases/download/$release_tag/$archive_name"
+  archive="$tmp_dir/$archive_name"
 
-  if [ -z "$download_url" ]; then
-    echo "error: could not find a release asset for $target in $repo" >&2
-    exit 1
-  fi
-
-  archive="$tmp_dir/agentdoctor.tar.gz"
-  run_step "Downloading release archive" download_archive
+  run_step "Downloading $archive_name" download_archive
   run_step "Extracting release archive" extract_archive
 
   binary="$(find "$tmp_dir" -type f -name agentdoctor | head -n 1)"

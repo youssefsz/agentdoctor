@@ -126,10 +126,28 @@ test_run_step_executes_command_without_tty() (
   assert_file_contains "$tmp/marker" "ok"
 )
 
+test_release_tag_from_url_parses_github_latest_redirect() (
+  tmp="${TMPDIR:-/tmp}/agentdoctor-install-test-release-tag-$$"
+  rm -rf "$tmp"
+  mkdir -p "$tmp/home"
+  trap 'rm -rf "$tmp"' EXIT INT TERM
+
+  HOME="$tmp/home"
+  SHELL="/bin/sh"
+  AGENTDOCTOR_INSTALLER_SOURCE_ONLY=1
+  export HOME SHELL AGENTDOCTOR_INSTALLER_SOURCE_ONLY
+
+  . "$repo_root/install.sh"
+
+  tag="$(release_tag_from_url "https://github.com/youssefsz/agentdoctor/releases/tag/v0.1.4")"
+  [ "$tag" = "v0.1.4" ] || fail "release_tag_from_url did not parse the tag"
+)
+
 test_macos_zsh_profiles
 test_linux_bash_profiles
 test_macos_default_install_dir_prefers_user_directory
 test_system_install_mode_prefers_path_system_directory
 test_run_step_executes_command_without_tty
+test_release_tag_from_url_parses_github_latest_redirect
 
 echo "install.sh profile tests passed"
