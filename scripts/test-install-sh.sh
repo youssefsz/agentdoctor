@@ -128,12 +128,12 @@ test_run_step_executes_command_without_tty() (
 
 test_release_tag_json_parser_matches_github_payload_shape() (
   tag="$(
-    printf '%s\n' '{"tag_name":"v0.1.6","assets":[]}' \
+    printf '%s\n' '{"tag_name":"v0.1.7","assets":[]}' \
       | sed -n 's/.*"tag_name":[[:space:]]*"\([^"]*\)".*/\1/p' \
       | head -n 1
   )"
 
-  [ "$tag" = "v0.1.6" ] || fail "tag_name parser did not match compact GitHub payload"
+  [ "$tag" = "v0.1.7" ] || fail "tag_name parser did not match compact GitHub payload"
 )
 
 test_macos_zsh_profiles

@@ -3,12 +3,13 @@ members = [
     "crates/agentdoctor-engine",
     "crates/agentdoctor-config",
     "crates/agentdoctor-report",
+    "crates/agentdoctor-tui",
     "crates/agentdoctor-cli",
 ]
 resolver = "3"
 
 [workspace.package]
-version = "0.1.6"
+version = "0.1.7"
 edition = "2024"
 rust-version = "1.85"
 license = "MIT"
@@ -20,6 +21,7 @@ description = "Audit repositories for AI coding agent readiness."
 agentdoctor-engine = { path = "crates/agentdoctor-engine" }
 agentdoctor-config = { path = "crates/agentdoctor-config" }
 agentdoctor-report = { path = "crates/agentdoctor-report" }
+agentdoctor-tui = { path = "crates/agentdoctor-tui" }
 
 anyhow = "1"
 anstream = "0.6"
@@ -31,6 +33,8 @@ flate2 = "1"
 ignore = "0.4"
 indicatif = "0.18.5"
 inquire = "0.9"
+crossterm = "0.28.1"
+ratatui = "0.29.0"
 predicates = "3"
 pretty_assertions = "1"
 self-replace = "1.5.0"

@@ -34,6 +34,23 @@ fn scan_json_outputs_valid_json_only() {
 }
 
 #[test]
+fn bare_command_falls_back_to_scan_output_in_ci() {
+    let repo = tempdir().expect("repo");
+    let config_home = tempdir().expect("config");
+    fs::write(
+        repo.path().join("Cargo.toml"),
+        "[package]\nname = \"demo\"\nversion = \"0.1.0\"\nedition = \"2024\"\n",
+    )
+    .expect("write cargo");
+
+    command(config_home.path())
+        .current_dir(repo.path())
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("AI Agent Readiness"));
+}
+
+#[test]
 fn scan_json_does_not_prompt_without_global_config() {
     let repo = tempdir().expect("repo");
     let config_home = tempdir().expect("config");

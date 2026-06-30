@@ -1,7 +1,6 @@
 #![forbid(unsafe_code)]
 
 mod lifecycle;
-
 use std::{error::Error, fmt, io::IsTerminal, path::PathBuf, process::ExitCode, str::FromStr};
 
 use agentdoctor_config::{
@@ -30,21 +29,28 @@ fn main() -> ExitCode {
 fn run() -> anyhow::Result<ExitCode> {
     let cli = Cli::parse();
     match cli.command {
+        None => run_default(cli.no_interactive),
+        Some(command) => run_command(command, cli.no_interactive),
+    }
+}
+
+fn run_command(command: Commands, no_interactive: bool) -> anyhow::Result<ExitCode> {
+    match command {
         Commands::Scan {
             path,
             format,
             agents,
             no_progress: _,
-        } => run_scan(path, format, agents, cli.no_interactive),
+        } => run_scan(path, format, agents, no_interactive),
         Commands::Init {
             path,
             agents,
             dry_run,
-        } => run_init(path, agents, dry_run, cli.no_interactive),
+        } => run_init(path, agents, dry_run, no_interactive),
         Commands::Config { command } => run_config(command),
         Commands::Upgrade { repo, force } => lifecycle::run_upgrade(repo, force),
         Commands::Uninstall { yes, remove_config } => {
-            lifecycle::run_uninstall(yes, remove_config, cli.no_interactive)
+            lifecycle::run_uninstall(yes, remove_config, no_interactive)
         }
     }
 }
@@ -56,7 +62,7 @@ struct Cli {
     #[arg(long, global = true)]
     no_interactive: bool,
     #[command(subcommand)]
-    command: Commands,
+    command: Option<Commands>,
 }
 
 #[derive(Debug, Subcommand)]
@@ -129,6 +135,22 @@ enum ConfigCommand {
 enum OutputFormat {
     Pretty,
     Json,
+}
+
+fn run_default(no_interactive: bool) -> anyhow::Result<ExitCode> {
+    if should_launch_tui(no_interactive) {
+        let root = std::env::current_dir().context("failed to read current directory")?;
+        let project_config = load_project_config(&root)?;
+        let global_config = load_global_config()?;
+        let profile = resolve_profile(None, project_config.as_ref(), global_config.as_ref());
+        return agentdoctor_tui::run(root, profile, project_config);
+    }
+
+    run_scan(None, OutputFormat::Pretty, None, no_interactive)
+}
+
+fn should_launch_tui(no_interactive: bool) -> bool {
+    !no_interactive && !is_ci() && std::io::stdin().is_terminal() && std::io::stdout().is_terminal()
 }
 
 fn run_scan(

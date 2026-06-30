@@ -3,3 +3,4 @@
 /.vscode/
 *.pdb
 *.log
+.DS_Store

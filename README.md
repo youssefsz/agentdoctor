@@ -55,6 +55,8 @@ runtime.
   literals in MCP config without printing secret values.
 - Detects common stacks and commands for Rust, JavaScript/TypeScript, Python,
   Go, Docker, CI, and database tooling.
+- Opens a keyboard-driven terminal UI with `agentdoctor` in interactive
+  terminals.
 - Produces human-readable and machine-readable reports.
 - Scores AI-agent readiness out of 100 with evidence.
 - Generates deterministic repo setup plans with `init --dry-run`.
@@ -109,12 +111,19 @@ After installation:
 
 ```bash
 agentdoctor --version
+agentdoctor
 agentdoctor scan --no-interactive
 ```
 
 ## Quick Start
 
-Scan the current repository:
+Open the terminal UI for the current repository:
+
+```bash
+agentdoctor
+```
+
+Print a scan report:
 
 ```bash
 agentdoctor scan
@@ -150,7 +159,7 @@ agentdoctor config show
 ## Example Output
 
 ```text
-AgentDoctor 0.1.6
+AgentDoctor 0.1.7
 
 Detected: Cargo
 
@@ -172,6 +181,7 @@ Score breakdown
 ## Commands
 
 ```bash
+agentdoctor [--no-interactive]
 agentdoctor [--no-interactive] <command>
 agentdoctor --help
 agentdoctor --version

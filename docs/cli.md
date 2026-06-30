@@ -7,12 +7,19 @@ user config outside the repository.
 ## Global Options
 
 ```bash
+agentdoctor [--no-interactive]
 agentdoctor [--no-interactive] <command>
 agentdoctor --help
 agentdoctor --version
 ```
 
-`--no-interactive` disables prompts. Use it in CI, scripts, and automation.
+Running `agentdoctor` with no subcommand opens the terminal UI when stdin and
+stdout are interactive terminals. In CI, scripts, pipes, or with
+`--no-interactive`, the bare command falls back to the normal pretty scan
+report.
+
+`--no-interactive` disables prompts and the terminal UI. Use it in CI, scripts,
+and automation.
 
 ## scan
 

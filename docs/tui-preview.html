@@ -1,0 +1,555 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AgentDoctor TUI Preview</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #090d0e;
+      --term: #0d1213;
+      --soft: #121819;
+      --line: #2d393a;
+      --line-2: #435052;
+      --text: #dce6df;
+      --muted: #91a09b;
+      --dim: #60706c;
+      --green: #73e2a7;
+      --cyan: #63cbd0;
+      --amber: #e3b261;
+      --red: #f06f6f;
+      --violet: #aa9dff;
+      --mono: "SFMono-Regular", "Cascadia Mono", "Liberation Mono", Menlo, Consolas, monospace;
+      --sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 28px;
+      background: #070a0b;
+      color: var(--text);
+      font-family: var(--sans);
+    }
+
+    .terminal {
+      width: min(1180px, 100%);
+      overflow: hidden;
+      border: 1px solid #303d3e;
+      border-radius: 8px;
+      background: var(--term);
+      box-shadow: 0 28px 80px rgba(0, 0, 0, 0.44);
+    }
+
+    .chrome {
+      height: 36px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 0 13px;
+      border-bottom: 1px solid var(--line);
+      background: #0a0f10;
+      color: var(--dim);
+      font: 12px var(--mono);
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--dim);
+    }
+
+    .red { color: var(--red); }
+    .amber { color: var(--amber); }
+    .green { color: var(--green); }
+    .cyan { color: var(--cyan); }
+    .violet { color: var(--violet); }
+    .muted { color: var(--muted); }
+    .dim { color: var(--dim); }
+
+    .screen {
+      min-height: 720px;
+      padding: 18px 20px 14px;
+      font-family: var(--mono);
+      font-size: 13px;
+      line-height: 1.35;
+      letter-spacing: 0;
+    }
+
+    .ascii {
+      margin: 0 0 12px;
+      color: var(--green);
+      font: 700 12px/1.05 var(--mono);
+      white-space: pre;
+    }
+
+    .command-line {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--line);
+      color: var(--muted);
+    }
+
+    .path {
+      min-width: 0;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
+    .status {
+      display: flex;
+      gap: 12px;
+      white-space: nowrap;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 230px minmax(0, 1fr);
+      gap: 20px;
+      padding-top: 16px;
+    }
+
+    .left {
+      border-right: 1px solid var(--line);
+      padding-right: 18px;
+    }
+
+    .section {
+      margin-bottom: 18px;
+    }
+
+    .heading {
+      margin-bottom: 8px;
+      color: var(--dim);
+      font-size: 11px;
+      text-transform: uppercase;
+    }
+
+    .menu {
+      display: grid;
+      gap: 4px;
+    }
+
+    .menu-row {
+      display: grid;
+      grid-template-columns: 18px 1fr auto;
+      align-items: center;
+      gap: 8px;
+      min-height: 28px;
+      color: var(--muted);
+    }
+
+    .menu-row.active {
+      color: var(--text);
+    }
+
+    .menu-row.active .cursor {
+      color: var(--green);
+    }
+
+    .small-list {
+      display: grid;
+      gap: 6px;
+      color: var(--muted);
+    }
+
+    .small-list b {
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    .main {
+      min-width: 0;
+    }
+
+    .headline {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: end;
+      gap: 20px;
+      margin-bottom: 18px;
+    }
+
+    .score {
+      color: var(--green);
+      font: 800 76px/0.9 var(--sans);
+    }
+
+    .score-copy {
+      min-width: 0;
+      padding-bottom: 7px;
+    }
+
+    .score-title {
+      color: var(--text);
+      font: 700 19px/1.1 var(--sans);
+    }
+
+    .score-subtitle {
+      margin-top: 6px;
+      color: var(--muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .finding-strip {
+      display: grid;
+      grid-template-columns: repeat(4, auto);
+      gap: 14px;
+      padding-bottom: 10px;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    .divider {
+      height: 1px;
+      background: var(--line);
+      margin: 14px 0;
+    }
+
+    .bars {
+      display: grid;
+      gap: 9px;
+      margin-bottom: 18px;
+    }
+
+    .bar-row {
+      display: grid;
+      grid-template-columns: 210px 1fr 58px;
+      gap: 12px;
+      align-items: center;
+      min-width: 0;
+    }
+
+    .bar-name {
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
+    .track {
+      height: 8px;
+      background: #202a2b;
+      overflow: hidden;
+    }
+
+    .fill {
+      height: 100%;
+      background: var(--green);
+    }
+
+    .fill.cyan { background: var(--cyan); }
+    .fill.amber { background: var(--amber); }
+
+    .score-frac {
+      color: var(--muted);
+      text-align: right;
+    }
+
+    .split {
+      display: grid;
+      grid-template-columns: minmax(0, 1.25fr) minmax(280px, 0.75fr);
+      gap: 20px;
+    }
+
+    .block-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+      color: var(--muted);
+    }
+
+    .rows {
+      display: grid;
+      gap: 4px;
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: 92px 1fr 64px;
+      gap: 12px;
+      min-height: 28px;
+      align-items: center;
+      color: var(--muted);
+    }
+
+    .row.selected {
+      color: var(--text);
+      background: linear-gradient(90deg, rgba(115, 226, 167, 0.12), transparent 74%);
+    }
+
+    .code {
+      color: var(--text);
+    }
+
+    .right-note {
+      display: grid;
+      gap: 8px;
+      color: var(--muted);
+    }
+
+    .note-line {
+      display: grid;
+      grid-template-columns: 24px 1fr;
+      gap: 8px;
+    }
+
+    .commands {
+      display: grid;
+      gap: 5px;
+      margin-top: 16px;
+      color: var(--muted);
+    }
+
+    .command {
+      display: grid;
+      grid-template-columns: 62px 1fr;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .command span:last-child {
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      color: var(--text);
+    }
+
+    .footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-top: 18px;
+      padding-top: 12px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .keys {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    kbd {
+      padding: 1px 6px;
+      border: 1px solid var(--line-2);
+      border-radius: 4px;
+      background: var(--soft);
+      color: var(--text);
+      font: inherit;
+    }
+
+    @media (max-width: 920px) {
+      body {
+        padding: 14px;
+      }
+
+      .layout,
+      .split,
+      .headline {
+        grid-template-columns: 1fr;
+      }
+
+      .left {
+        border-right: 0;
+        border-bottom: 1px solid var(--line);
+        padding-right: 0;
+        padding-bottom: 14px;
+      }
+
+      .bar-row,
+      .row {
+        grid-template-columns: 1fr;
+        gap: 4px;
+      }
+
+      .score-frac {
+        text-align: left;
+      }
+
+      .footer,
+      .command-line {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="terminal" aria-label="AgentDoctor terminal UI preview">
+    <div class="chrome">
+      <span class="dot" style="background:#e05d5d"></span>
+      <span class="dot" style="background:#d89b45"></span>
+      <span class="dot" style="background:#5fd08d"></span>
+      <span>agentdoctor</span>
+    </div>
+
+    <section class="screen">
+<pre class="ascii">    ___                    __  ____             __
+   /   |  ____ ____  ____ / /_/ __ \____  _____/ /_____  _____
+  / /| | / __ `/ _ \/ __ `/ __/ / / / __ \/ ___/ __/ __ \/ ___/
+ / ___ |/ /_/ /  __/ /_/ / /_/ /_/ / /_/ / /__/ /_/ /_/ / /
+/_/  |_|\__, /\___/\__,_/\__/_____/\____/\___/\__/\____/_/
+       /____/</pre>
+
+      <div class="command-line">
+        <div class="path"><span class="dim">$</span> agentdoctor <span class="dim">/Users/youssefsz/Terminal-apps/agentdoctor</span></div>
+        <div class="status">
+          <span class="green">● clean</span>
+          <span>cargo</span>
+          <span>offline</span>
+        </div>
+      </div>
+
+      <div class="layout">
+        <aside class="left">
+          <div class="section">
+            <div class="heading">views</div>
+            <div class="menu">
+              <div class="menu-row active"><span class="cursor">›</span><span>scan summary</span><span>s</span></div>
+              <div class="menu-row"><span></span><span>findings</span><span>f</span></div>
+              <div class="menu-row"><span></span><span>evidence</span><span>e</span></div>
+              <div class="menu-row"><span></span><span>init dry-run</span><span>i</span></div>
+              <div class="menu-row"><span></span><span>config</span><span>c</span></div>
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="heading">detected</div>
+            <div class="small-list">
+              <div><b>stack</b> Rust 2024 workspace</div>
+              <div><b>agent</b> AGENTS.md</div>
+              <div><b>skill</b> rust-best-practices</div>
+              <div><b>ci</b> fmt, clippy, test, build</div>
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="heading">profile</div>
+            <div class="small-list">
+              <div><b>selected</b> generic</div>
+              <div><b>output</b> pretty / json</div>
+              <div><b>network</b> no scan access</div>
+            </div>
+          </div>
+        </aside>
+
+        <section class="main">
+          <div class="headline">
+            <div class="score">92</div>
+            <div class="score-copy">
+              <div class="score-title">AI Agent Readiness</div>
+              <div class="score-subtitle">No findings. Two command evidence notes remain.</div>
+            </div>
+            <div class="finding-strip">
+              <span><span class="red">0</span> critical</span>
+              <span><span class="amber">0</span> warnings</span>
+              <span><span class="cyan">0</span> info</span>
+              <span><span class="violet">0</span> suggestions</span>
+            </div>
+          </div>
+
+          <div class="divider"></div>
+
+          <div class="bars" aria-label="Score categories">
+            <div class="bar-row">
+              <span class="bar-name">Agent files</span>
+              <span class="track"><span class="fill" style="width:100%"></span></span>
+              <span class="score-frac">25/25</span>
+            </div>
+            <div class="bar-row">
+              <span class="bar-name">Project-specific detail</span>
+              <span class="track"><span class="fill cyan" style="width:100%"></span></span>
+              <span class="score-frac">20/20</span>
+            </div>
+            <div class="bar-row">
+              <span class="bar-name">Commands</span>
+              <span class="track"><span class="fill amber" style="width:60%"></span></span>
+              <span class="score-frac">12/20</span>
+            </div>
+            <div class="bar-row">
+              <span class="bar-name">Safety boundaries</span>
+              <span class="track"><span class="fill" style="width:100%"></span></span>
+              <span class="score-frac">15/15</span>
+            </div>
+            <div class="bar-row">
+              <span class="bar-name">Repo hygiene</span>
+              <span class="track"><span class="fill cyan" style="width:100%"></span></span>
+              <span class="score-frac">10/10</span>
+            </div>
+            <div class="bar-row">
+              <span class="bar-name">Automation/CI</span>
+              <span class="track"><span class="fill" style="width:100%"></span></span>
+              <span class="score-frac">10/10</span>
+            </div>
+          </div>
+
+          <div class="split">
+            <div>
+              <div class="block-title">
+                <span>evidence: commands</span>
+                <span>j/k move · enter details</span>
+              </div>
+              <div class="rows">
+                <div class="row selected"><span class="code">install</span><span>Command was not detected.</span><span class="amber">0 pts</span></div>
+                <div class="row"><span class="code">dev</span><span>Command was not detected.</span><span class="amber">0 pts</span></div>
+                <div class="row"><span class="code">build</span><span>Detected command: cargo build.</span><span class="green">+4 pts</span></div>
+                <div class="row"><span class="code">test</span><span>Detected command: cargo test.</span><span class="green">+4 pts</span></div>
+                <div class="row"><span class="code">quality</span><span>Detected quality command: cargo clippy.</span><span class="green">+4 pts</span></div>
+              </div>
+            </div>
+
+            <div>
+              <div class="block-title">
+                <span>next action</span>
+                <span class="green">ready</span>
+              </div>
+              <div class="right-note">
+                <div class="note-line"><span class="green">ok</span><span>Repository is ready for agent work.</span></div>
+                <div class="note-line"><span class="amber">--</span><span>Add install/dev commands to project config only if a perfect score matters.</span></div>
+                <div class="note-line"><span class="green">ok</span><span>JSON output remains safe for CI.</span></div>
+              </div>
+
+              <div class="commands">
+                <div class="heading">detected commands</div>
+                <div class="command"><span>fmt</span><span>cargo fmt</span></div>
+                <div class="command"><span>lint</span><span>cargo clippy</span></div>
+                <div class="command"><span>test</span><span>cargo test</span></div>
+                <div class="command"><span>build</span><span>cargo build</span></div>
+              </div>
+            </div>
+          </div>
+
+          <footer class="footer">
+            <div class="keys">
+              <span><kbd>tab</kbd> view</span>
+              <span><kbd>j</kbd>/<kbd>k</kbd> row</span>
+              <span><kbd>r</kbd> rescan</span>
+              <span><kbd>?</kbd> help</span>
+              <span><kbd>q</kbd> quit</span>
+            </div>
+            <div class="green">scan completed · exit 0</div>
+          </footer>
+        </section>
+      </div>
+    </section>
+  </main>
+</body>
+</html>
