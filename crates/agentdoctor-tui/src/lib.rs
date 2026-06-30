@@ -1554,6 +1554,7 @@ enum Palette {
     Text,
     Muted,
     Dim,
+    Selected,
     Green,
     Cyan,
     Amber,
@@ -1570,6 +1571,7 @@ impl Palette {
             Self::Text => Color::Rgb(220, 230, 223),
             Self::Muted => Color::Rgb(145, 160, 155),
             Self::Dim => Color::Rgb(96, 112, 108),
+            Self::Selected => Color::Rgb(31, 45, 46),
             Self::Green => Color::Rgb(115, 226, 167),
             Self::Cyan => Color::Rgb(99, 203, 208),
             Self::Amber => Color::Rgb(227, 178, 97),
@@ -1963,22 +1965,39 @@ fn row_line(
         .max(12);
     let subject = truncate_end(subject, subject_width);
     Line::from(vec![
-        Span::styled(prefix, Style::default().fg(Palette::Green.color())),
+        Span::styled(prefix, row_span_style(selected, Palette::Green.color())),
         Span::styled(
             format!("{subject:<subject_width$}"),
-            Style::default().fg(Palette::Text.color()),
+            row_span_style(selected, Palette::Text.color()),
         ),
-        Span::raw(" "),
+        Span::styled(" ", row_span_style(selected, Palette::Text.color())),
         Span::styled(
             format!("{:<message_width$} ", truncate_text(message, message_width)),
-            Style::default().fg(if selected {
-                Palette::Text.color()
-            } else {
-                Palette::Muted.color()
-            }),
+            row_span_style(
+                selected,
+                if selected {
+                    Palette::Text.color()
+                } else {
+                    Palette::Muted.color()
+                },
+            ),
         ),
-        Span::styled(points.to_string(), Style::default().fg(palette.color())),
+        Span::styled(
+            points.to_string(),
+            row_span_style(selected, palette.color()),
+        ),
     ])
+}
+
+fn row_span_style(selected: bool, foreground: Color) -> Style {
+    let style = Style::default().fg(foreground);
+    if selected {
+        style
+            .bg(Palette::Selected.color())
+            .add_modifier(Modifier::BOLD)
+    } else {
+        style
+    }
 }
 
 fn row_subject_width(width: u16) -> usize {
@@ -2332,6 +2351,25 @@ mod tests {
 
         assert!(rendered.contains("typecheck-or-lint-command"));
         assert!(!rendered.contains("typecheck-or-lin...Detected"));
+    }
+
+    #[test]
+    fn selected_row_line_highlights_every_span_across_full_width() {
+        let width = 96;
+        let line = row_line(
+            true,
+            "agent codex",
+            "enabled",
+            "agent",
+            Palette::Green,
+            width,
+        );
+
+        assert_eq!(line_text(line.clone()).len(), usize::from(width));
+        assert!(line.spans.iter().all(|span| {
+            span.style.bg == Some(Palette::Selected.color())
+                && span.style.add_modifier.contains(Modifier::BOLD)
+        }));
     }
 
     #[test]

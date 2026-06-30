@@ -159,7 +159,7 @@ agentdoctor config show
 ## Example Output
 
 ```text
-AgentDoctor 0.1.7
+AgentDoctor 0.1.8
 
 Detected: Cargo
 
