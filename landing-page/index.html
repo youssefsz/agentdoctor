@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>AgentDoctor - Audit repositories for AI coding agent readiness</title>
+    <meta
+      name="description"
+      content="AgentDoctor is an open-source Rust CLI that audits repositories for AI coding agent readiness without telemetry, AI APIs, or network access during scans."
+    >
+    <link rel="canonical" href="https://agentdoctor.youssef.tn/">
+    <meta name="robots" content="index,follow">
+    <meta name="theme-color" content="#090d0e">
+
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="AgentDoctor">
+    <meta property="og:locale" content="en_US">
+    <meta property="og:title" content="AgentDoctor">
+    <meta
+      property="og:description"
+      content="Audit and prepare repositories for AI coding agents with a native Rust CLI."
+    >
+    <meta property="og:url" content="https://agentdoctor.youssef.tn/">
+    <meta property="og:image" content="https://agentdoctor.youssef.tn/assets/social-preview.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="AgentDoctor">
+    <meta
+      name="twitter:description"
+      content="Audit and prepare repositories for AI coding agents with a native Rust CLI."
+    >
+    <meta name="twitter:image" content="https://agentdoctor.youssef.tn/assets/social-preview.png">
+
+    <link rel="icon" href="assets/favicon.png" type="image/png">
+    <link rel="preload" href="assets/agentdoctor-terminal.png" as="image" type="image/png">
+    <link rel="stylesheet" href="assets/styles.css">
+    <script src="assets/site.js" defer></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <header class="site-header">
+      <a class="brand" href="./" aria-label="AgentDoctor home">
+        <img class="brand-logo" src="assets/agentdoctor-wordmark.png" alt="AgentDoctor" width="551" height="106">
+      </a>
+      <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav">
+        Menu
+      </button>
+      <nav class="site-nav" id="site-nav" aria-label="Primary navigation">
+        <a href="docs/">Docs</a>
+        <a href="#install">Install</a>
+        <a href="https://github.com/youssefsz/agentdoctor" rel="noreferrer">GitHub</a>
+        <a class="nav-cta" href="https://github.com/youssefsz/agentdoctor/releases" rel="noreferrer">
+          Releases
+        </a>
+      </nav>
+    </header>
+
+    <main id="main">
+      <section class="hero" aria-labelledby="hero-title">
+        <p class="eyebrow">Open-source Rust CLI. Offline by design.</p>
+        <h1 id="hero-title">
+          <img class="hero-wordmark" src="assets/agentdoctor-wordmark.png" alt="AgentDoctor" width="551" height="106">
+        </h1>
+        <p class="hero-copy">
+          Audit and prepare repositories for AI coding agents before Codex,
+          Claude Code, Cursor, Copilot, Gemini CLI, or generic AGENTS.md tools
+          start working in them.
+        </p>
+        <div class="hero-actions" aria-label="Primary actions">
+          <a class="button primary" href="#install">Install AgentDoctor</a>
+          <a class="button secondary" href="docs/">Read the docs</a>
+        </div>
+
+        <div class="install-panel" id="install" aria-labelledby="install-title">
+          <div class="panel-heading">
+            <div>
+              <h2 id="install-title">One command for your platform.</h2>
+            </div>
+            <a
+              class="text-link"
+              href="https://raw.githubusercontent.com/youssefsz/agentdoctor/main/install.ps1"
+              target="_blank"
+              rel="noreferrer"
+              data-source-link
+            >
+              View source
+            </a>
+          </div>
+          <div class="tabs" role="tablist" aria-label="Install commands">
+            <button
+              class="tab active"
+              type="button"
+              role="tab"
+              id="tab-windows"
+              aria-selected="true"
+              aria-controls="panel-windows"
+              data-tab-target="panel-windows"
+              data-source-url="https://raw.githubusercontent.com/youssefsz/agentdoctor/main/install.ps1"
+            >
+              Windows
+            </button>
+            <button
+              class="tab"
+              type="button"
+              role="tab"
+              id="tab-unix"
+              aria-selected="false"
+              aria-controls="panel-unix"
+              data-tab-target="panel-unix"
+              data-source-url="https://raw.githubusercontent.com/youssefsz/agentdoctor/main/install.sh"
+            >
+              macOS / Linux
+            </button>
+          </div>
+          <div class="tab-panels">
+            <div
+              class="tab-panel active"
+              id="panel-windows"
+              role="tabpanel"
+              aria-labelledby="tab-windows"
+            >
+              <pre><code>irm https://raw.githubusercontent.com/youssefsz/agentdoctor/main/install.ps1 | iex</code></pre>
+              <button class="copy-button" type="button" data-copy-target="panel-windows">Copy</button>
+            </div>
+            <div
+              class="tab-panel"
+              id="panel-unix"
+              role="tabpanel"
+              aria-labelledby="tab-unix"
+              hidden
+            >
+              <pre><code>curl -fsSL https://raw.githubusercontent.com/youssefsz/agentdoctor/main/install.sh | sh</code></pre>
+              <button class="copy-button" type="button" data-copy-target="panel-unix">Copy</button>
+            </div>
+          </div>
+        </div>
+
+        <figure class="terminal-shot">
+          <img
+            src="assets/agentdoctor-terminal.png"
+            alt="AgentDoctor terminal UI showing a clean repository scan, readiness score evidence, detected Cargo stack, and command checks."
+            width="1440"
+            height="917"
+            fetchpriority="high"
+          >
+          <figcaption>
+            Pretty reports for humans. JSON output for CI and automation.
+          </figcaption>
+        </figure>
+      </section>
+
+    </main>
+
+    <footer class="site-footer">
+      <div>
+        <a class="footer-brand" href="./">AgentDoctor</a>
+        <p>
+          Open-source developer tooling created by
+          <a href="https://youssef.tn" rel="noreferrer">Youssef Dhibi</a>.
+        </p>
+        <p>Support: <a href="mailto:dhibi.ywsf@gmail.com">dhibi.ywsf@gmail.com</a></p>
+      </div>
+      <nav aria-label="Footer navigation">
+        <a href="docs/">Documentation</a>
+        <a href="privacy/">Privacy Policy</a>
+        <a href="terms/">Terms of Use</a>
+        <a href="https://github.com/youssefsz/agentdoctor/blob/main/LICENSE" rel="noreferrer">
+          MIT License
+        </a>
+      </nav>
+    </footer>
+  </body>
+</html>

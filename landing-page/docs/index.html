@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>AgentDoctor Documentation - Install, scan, configure, and automate</title>
+    <meta
+      name="description"
+      content="Concise AgentDoctor documentation covering installation, scan reports, JSON output, init dry-runs, configuration, scoring, and exit codes."
+    >
+    <link rel="canonical" href="https://agentdoctor.youssef.tn/docs/">
+    <meta name="robots" content="index,follow">
+    <meta name="theme-color" content="#090d0e">
+    <meta property="og:type" content="article">
+    <meta property="og:site_name" content="AgentDoctor">
+    <meta property="og:title" content="AgentDoctor Documentation">
+    <meta
+      property="og:description"
+      content="Install, scan, configure, and automate AgentDoctor."
+    >
+    <meta property="og:url" content="https://agentdoctor.youssef.tn/docs/">
+    <meta property="og:image" content="https://agentdoctor.youssef.tn/assets/social-preview.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <link rel="icon" href="../assets/favicon.png" type="image/png">
+    <link rel="stylesheet" href="../assets/styles.css">
+    <script src="../assets/site.js" defer></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <header class="site-header">
+      <a class="brand" href="../" aria-label="AgentDoctor home">
+        <img class="brand-logo" src="../assets/agentdoctor-wordmark.png" alt="AgentDoctor" width="551" height="106">
+      </a>
+      <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav">
+        Menu
+      </button>
+      <nav class="site-nav" id="site-nav" aria-label="Primary navigation">
+        <a aria-current="page" href="./">Docs</a>
+        <a href="../#install">Install</a>
+        <a href="https://github.com/youssefsz/agentdoctor" rel="noreferrer">GitHub</a>
+        <a class="nav-cta" href="https://github.com/youssefsz/agentdoctor/releases" rel="noreferrer">
+          Releases
+        </a>
+      </nav>
+    </header>
+
+    <main id="main" class="doc-layout">
+      <aside class="doc-nav" aria-label="Documentation sections">
+        <a href="#install">Install</a>
+        <a href="#quick-start">Quick start</a>
+        <a href="#commands">Commands</a>
+        <a href="#configuration">Configuration</a>
+        <a href="#findings">Findings</a>
+        <a href="#exit-codes">Exit codes</a>
+      </aside>
+
+      <article class="doc-content">
+        <h1>Use AgentDoctor in a terminal or CI pipeline.</h1>
+        <p class="lead">
+          AgentDoctor scans a repository and reports whether AI coding agents
+          have enough project-specific instructions, commands, boundaries, and
+          automation evidence to work safely.
+        </p>
+
+        <section id="install">
+          <h2>Install</h2>
+          <p>Windows PowerShell:</p>
+          <div class="code-block" id="docs-install-windows">
+            <pre><code>irm https://raw.githubusercontent.com/youssefsz/agentdoctor/main/install.ps1 | iex</code></pre>
+            <button class="copy-button" type="button" data-copy-target="docs-install-windows">Copy</button>
+          </div>
+          <p>macOS and Linux:</p>
+          <div class="code-block" id="docs-install-unix">
+            <pre><code>curl -fsSL https://raw.githubusercontent.com/youssefsz/agentdoctor/main/install.sh | sh</code></pre>
+            <button class="copy-button" type="button" data-copy-target="docs-install-unix">Copy</button>
+          </div>
+          <p>From a local source checkout:</p>
+          <div class="code-block" id="docs-install-source">
+            <pre><code>cargo install --path crates/agentdoctor-cli --locked --force</code></pre>
+            <button class="copy-button" type="button" data-copy-target="docs-install-source">Copy</button>
+          </div>
+        </section>
+
+        <section id="quick-start">
+          <h2>Quick start</h2>
+          <div class="code-block" id="docs-quick-start">
+            <pre><code>agentdoctor
+agentdoctor scan
+agentdoctor scan --format json --no-interactive
+agentdoctor init --dry-run --agents codex,claude,cursor</code></pre>
+            <button class="copy-button" type="button" data-copy-target="docs-quick-start">Copy</button>
+          </div>
+          <p>
+            Running <code>agentdoctor</code> opens the terminal UI in an
+            interactive terminal. In scripts, CI, pipes, or with
+            <code>--no-interactive</code>, it falls back to the pretty scan
+            report.
+          </p>
+        </section>
+
+        <section id="commands">
+          <h2>Commands</h2>
+          <div class="doc-table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Command</th>
+                  <th>Purpose</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><code>agentdoctor scan [path]</code></td>
+                  <td>Scan a repository and print a pretty or JSON report.</td>
+                </tr>
+                <tr>
+                  <td><code>agentdoctor init --dry-run</code></td>
+                  <td>Preview deterministic setup files without writing them.</td>
+                </tr>
+                <tr>
+                  <td><code>agentdoctor config agents --set</code></td>
+                  <td>Save selected global agents for future scans.</td>
+                </tr>
+                <tr>
+                  <td><code>agentdoctor upgrade</code></td>
+                  <td>Install the latest GitHub release for the current platform.</td>
+                </tr>
+                <tr>
+                  <td><code>agentdoctor uninstall --yes</code></td>
+                  <td>Remove the current AgentDoctor executable.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section id="configuration">
+          <h2>Configuration</h2>
+          <p>
+            AgentDoctor uses CLI flags first, then project configuration from
+            <code>.agentdoctor.toml</code>, then global user configuration, then
+            safe defaults.
+          </p>
+          <div class="code-block" id="docs-config-example">
+            <pre><code>version = 1
+
+[agents]
+enabled = ["codex"]
+
+[score]
+minimum = 80
+
+[commands]
+format = "cargo fmt --all"
+lint = "cargo clippy --workspace --all-targets -- -D warnings"
+test = "cargo test --workspace"
+build = "cargo build --workspace --release"</code></pre>
+            <button class="copy-button" type="button" data-copy-target="docs-config-example">Copy</button>
+          </div>
+        </section>
+
+        <section id="findings">
+          <h2>Findings and score</h2>
+          <p>
+            Scores are out of 100 across agent files, project-specific detail,
+            commands, safety boundaries, repo hygiene, and automation/CI.
+            Findings use stable IDs such as <code>AD001</code> for a missing
+            canonical <code>AGENTS.md</code> and <code>AD015</code> for
+            secret-like MCP config literals.
+          </p>
+          <p>
+            JSON reports include score evidence, facts, findings,
+            recommendations, and flattened top-level evidence for automation.
+          </p>
+        </section>
+
+        <section id="exit-codes">
+          <h2>Exit codes</h2>
+          <div class="doc-table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Code</th>
+                  <th>Meaning</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><code>0</code></td>
+                  <td>Success.</td>
+                </tr>
+                <tr>
+                  <td><code>1</code></td>
+                  <td>Scan completed, but the score is below the configured minimum.</td>
+                </tr>
+                <tr>
+                  <td><code>2</code></td>
+                  <td>Usage error.</td>
+                </tr>
+                <tr>
+                  <td><code>3</code></td>
+                  <td>Configuration or engine error.</td>
+                </tr>
+                <tr>
+                  <td><code>4</code></td>
+                  <td>Unexpected error.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section>
+          <h2>Full references</h2>
+          <p>
+            The complete CLI, configuration, and scoring references live in the
+            open-source repository:
+            <a href="https://github.com/youssefsz/agentdoctor/tree/main/docs" rel="noreferrer">
+              github.com/youssefsz/agentdoctor/docs
+            </a>.
+          </p>
+        </section>
+      </article>
+    </main>
+
+    <footer class="site-footer">
+      <div>
+        <a class="footer-brand" href="../">AgentDoctor</a>
+        <p>
+          Open-source developer tooling created by
+          <a href="https://youssef.tn" rel="noreferrer">Youssef Dhibi</a>.
+        </p>
+        <p>Support: <a href="mailto:dhibi.ywsf@gmail.com">dhibi.ywsf@gmail.com</a></p>
+      </div>
+      <nav aria-label="Footer navigation">
+        <a href="./">Documentation</a>
+        <a href="../privacy/">Privacy Policy</a>
+        <a href="../terms/">Terms of Use</a>
+        <a href="https://github.com/youssefsz/agentdoctor/blob/main/LICENSE" rel="noreferrer">
+          MIT License
+        </a>
+      </nav>
+    </footer>
+  </body>
+</html>
