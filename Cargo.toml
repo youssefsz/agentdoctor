@@ -24,7 +24,7 @@ agentdoctor-report = { path = "crates/agentdoctor-report" }
 agentdoctor-tui = { path = "crates/agentdoctor-tui" }
 
 anyhow = "1"
-anstream = "0.6"
+anstream = "1.0"
 anstyle = "1"
 assert_cmd = "2"
 clap = { version = "4.6.1", features = ["derive"] }
